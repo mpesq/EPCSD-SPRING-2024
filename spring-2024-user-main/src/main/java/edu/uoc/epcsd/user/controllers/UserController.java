@@ -6,6 +6,8 @@ import edu.uoc.epcsd.user.controllers.dtos.GetUserResponse;
 import edu.uoc.epcsd.user.entities.User;
 import edu.uoc.epcsd.user.services.UserService;
 import lombok.extern.log4j.Log4j2;
+
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;

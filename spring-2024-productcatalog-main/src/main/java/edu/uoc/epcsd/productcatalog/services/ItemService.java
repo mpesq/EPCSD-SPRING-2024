@@ -17,47 +17,68 @@ import java.util.Optional;
 @Service
 public class ItemService {
 
-    @Autowired
-    private ItemRepository itemRepository;
+	@Autowired
+	private ItemRepository itemRepository;
 
-    @Autowired
-    private ProductService productService;
+	@Autowired
+	private ProductService productService;
 
-    @Autowired
-    private KafkaTemplate<String, ProductMessage> productKafkaTemplate;
+	@Autowired
+	private KafkaTemplate<String, ProductMessage> productKafkaTemplate;
 
-    public List<Item> findAll() {
-        return itemRepository.findAll();
-    }
+	public List<Item> findAll() {
+		return itemRepository.findAll();
+	}
 
-    public Optional<Item> findBySerialNumber(String serialNumber) {
-        return itemRepository.findBySerialNumber(serialNumber);
-    }
+	public Optional<Item> findBySerialNumber(String serialNumber) {
+		return itemRepository.findBySerialNumber(serialNumber);
+	}
 
-    public Item setOperational(String serialNumber, @RequestBody Boolean operational) {
+	public Item setOperational(String serialNumber, @RequestBody Boolean operational) {
 
-        // TODO: complete this method:
+		// TODO: complete this method:
+		Item item;
+		Optional<Item> opItem = findBySerialNumber(serialNumber);
 
-        return null;
+		if (opItem.isPresent()) {
+			item = opItem.get();
+			if (Boolean.TRUE.equals(operational)) {
+				item.setStatus(ItemStatus.OPERATIONAL);
+				productKafkaTemplate.send(
+						KafkaConstants.PRODUCT_TOPIC + KafkaConstants.SEPARATOR + KafkaConstants.UNIT_AVAILABLE,
+						ProductMessage.builder().productId(item.getProduct().getId()).build());
+			} else {
+				item.setStatus(ItemStatus.NON_OPERATIONAL);
+			}
+		} else {
+			throw new IllegalArgumentException("Could not find the item with serial number: " + serialNumber);
+		}
 
-    }
-    public Item createItem(Long productId, String serialNumber) {
+		itemRepository.save(item);
 
-        // bu default a new unit is OPERATIONAL
-        Item item = Item.builder().serialNumber(serialNumber).status(ItemStatus.OPERATIONAL).build();
+		return item;
 
-        Optional<Product> product = productService.findById(productId);
+	}
 
-        if (product.isPresent()) {
-            item.setProduct(product.get());
-        } else {
-            throw new IllegalArgumentException("Could not find the product with Id: " + productId);
-        }
+	public Item createItem(Long productId, String serialNumber) {
 
-        Item savedItem = itemRepository.save(item);
+		// bu default a new unit is OPERATIONAL
+		Item item = Item.builder().serialNumber(serialNumber).status(ItemStatus.OPERATIONAL).build();
 
-        productKafkaTemplate.send(KafkaConstants.PRODUCT_TOPIC + KafkaConstants.SEPARATOR + KafkaConstants.UNIT_AVAILABLE, ProductMessage.builder().productId(productId).build());
+		Optional<Product> product = productService.findById(productId);
 
-        return savedItem;
-    }
+		if (product.isPresent()) {
+			item.setProduct(product.get());
+		} else {
+			throw new IllegalArgumentException("Could not find the product with Id: " + productId);
+		}
+
+		Item savedItem = itemRepository.save(item);
+
+		productKafkaTemplate.send(
+				KafkaConstants.PRODUCT_TOPIC + KafkaConstants.SEPARATOR + KafkaConstants.UNIT_AVAILABLE,
+				ProductMessage.builder().productId(productId).build());
+
+		return savedItem;
+	}
 }

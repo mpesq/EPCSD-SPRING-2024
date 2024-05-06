@@ -58,6 +58,11 @@
             <artifactId>mockneat</artifactId>
             <version>0.4.7</version>
         </dependency>
+        <dependency>
+        	<groupId>edu.uoc.epcsd</groupId>
+        	<artifactId>productcatalog</artifactId>
+        	<version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

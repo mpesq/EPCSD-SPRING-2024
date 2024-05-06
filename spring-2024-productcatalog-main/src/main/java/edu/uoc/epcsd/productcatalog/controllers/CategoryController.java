@@ -4,6 +4,8 @@ import edu.uoc.epcsd.productcatalog.controllers.dtos.CreateCategoryRequest;
 import edu.uoc.epcsd.productcatalog.entities.Category;
 import edu.uoc.epcsd.productcatalog.services.CategoryService;
 import lombok.extern.log4j.Log4j2;
+
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ public class CategoryController {
 
     @Autowired
     private CategoryService categoryService;
+	
 
     @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)

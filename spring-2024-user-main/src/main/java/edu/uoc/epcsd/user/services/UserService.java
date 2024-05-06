@@ -27,7 +27,7 @@ public class UserService {
 
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
-    }
+    } 
 
     public User createUser(String email, String password, String fullName, String phoneNumber) {
 
