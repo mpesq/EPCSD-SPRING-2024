@@ -74,29 +74,41 @@ public class ProductController {
     // 1. remove product (use DELETE HTTP verb). Must remove the associated items
     
     @DeleteMapping("/{productId}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable @NotNull Long productId) {
-    	
+    public ResponseEntity<Boolean> deleteProduct(@PathVariable @NotNull Long productId) {
+    	log.trace("deleteProduct");
+
+        log.trace("Delete Product with id: " + productId);
+        
     	 if (productService.existsById(productId)) {
-    	        productService.deleteById(productId); 
-    	        return ResponseEntity.noContent().build();
+    	        productService.deleteById(productId);
+    	        return ResponseEntity.ok().body(true);
     	    } else {
-    	        return ResponseEntity.notFound().build();
+    	        return ResponseEntity.ok().body(false);
     	    }
     	
     }
     
     // 2. query products by name
     
-    @GetMapping("/{productName}")
-    public ResponseEntity<GetProductResponse> getProductByName(@PathVariable @NotNull String productName) {
+    @GetMapping("/name/{productName}")
+    public ResponseEntity<List<Product>> getProductsByName(@PathVariable @NotNull String productName) {
     	
-    	Product product = productService.findByName(productName);
-    	if (product != null) {
-    		return ResponseEntity.ok(GetProductResponse.fromDomain(product));
+    	List<Product> productsList = productService.findProductsByName(productName);
+    	if (productsList != null && !productsList.isEmpty()) {
+    		return ResponseEntity.ok().body(productsList);
     	}
 		return ResponseEntity.notFound().build();
     	
     }
     // 3. query products by category/subcategory
-
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable @NotNull Long categoryId) {
+    	
+    	List<Product> productsList = productService.findProductsByCategory(categoryId);
+    	if (productsList != null && !productsList.isEmpty()) {
+    		return ResponseEntity.ok().body(productsList);
+    	}
+		return ResponseEntity.notFound().build();
+    	
+    }
 }

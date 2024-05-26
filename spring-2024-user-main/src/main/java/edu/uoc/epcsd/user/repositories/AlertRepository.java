@@ -10,6 +10,6 @@ import java.util.List;
 public interface AlertRepository extends JpaRepository<Alert, Long> {
 
     @Query("select a from Alert a where a.productId = ?1 and a.from <= ?2 and a.to >= ?2")
-    List<Alert> findAlertsByProductIdAndInterval(Long productId, LocalDate availableOnDate);
+    List<Alert> findAlertsByProductIdAndDate(Long productId, LocalDate availableOnDate);
 
 }

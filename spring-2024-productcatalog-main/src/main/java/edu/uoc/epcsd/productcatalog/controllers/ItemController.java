@@ -69,11 +69,17 @@ public class ItemController {
 	// kafka message queue (see ItemService.createItem method)
 
 	@PatchMapping("/{serialNumber}/status")
-	public ResponseEntity<Void> setOperational(@PathVariable @NotNull String serialNumber,
+	public ResponseEntity<Boolean> setOperational(@PathVariable @NotNull String serialNumber,
 			@RequestBody Boolean operational) {
-		
-		itemService.setOperational(serialNumber, operational);
-		return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+		log.trace("setOperational");
+
+		log.trace("setting status item " + serialNumber);
+		Item item = itemService.setOperational(serialNumber, operational);
+		if (item.getSerialNumber() != null) {
+			return ResponseEntity.ok().body(true);
+		} else {
+			return ResponseEntity.ok().body(false);
+		}
 
 	}
 

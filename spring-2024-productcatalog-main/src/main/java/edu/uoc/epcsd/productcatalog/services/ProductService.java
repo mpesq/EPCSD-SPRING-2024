@@ -1,50 +1,59 @@
 package edu.uoc.epcsd.productcatalog.services;
 
 import edu.uoc.epcsd.productcatalog.entities.Category;
+import edu.uoc.epcsd.productcatalog.entities.ItemStatus;
 import edu.uoc.epcsd.productcatalog.entities.Product;
+import edu.uoc.epcsd.productcatalog.repositories.ItemRepository;
 import edu.uoc.epcsd.productcatalog.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
 @Service
 public class ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+	@Autowired
+	private ProductRepository productRepository;
+	
+	@Autowired
+	private ItemRepository itemRepository;
 
-    @Autowired
-    private CategoryService categoryService;
-    
-    @Autowired
-    private ItemService itemService;
+	@Autowired
+	private CategoryService categoryService;
 
-    public List<Product> findAll() {
-        return productRepository.findAll(); 
-    }
+//    @Autowired
+//    private ItemService itemService;
 
-    public Optional<Product> findById(Long productId) {
-        return productRepository.findById(productId);
-    }
+	public List<Product> findAll() {
+		return productRepository.findAll();
+	}
 
-    public Product createProduct(Long categoryId, String name, String description, Double dailyPrice, String brand, String model) {
+	public Optional<Product> findById(Long productId) {
+		return productRepository.findById(productId);
+	}
 
-        Product product = Product.builder().name(name).description(description).dailyPrice(dailyPrice).brand(brand).model(model).build();
+	public Product createProduct(Long categoryId, String name, String description, Double dailyPrice, String brand,
+			String model) {
 
-        if (categoryId != null) {
-            Optional<Category> category = categoryService.findById(categoryId);
+		Product product = Product.builder().name(name).description(description).dailyPrice(dailyPrice).brand(brand)
+				.model(model).build();
 
-            if (category.isPresent()) {
-                product.setCategory(category.get());
-            }
-        }
+		if (categoryId != null) {
+			Optional<Category> category = categoryService.findById(categoryId);
 
-        return productRepository.save(product);
-    }
+			if (category.isPresent()) {
+				product.setCategory(category.get());
+			}
+		}
+
+		return productRepository.save(product);
+	}
 
 	public boolean existsById(@NotNull Long productId) {
 		return productRepository.existsById(productId);
@@ -56,22 +65,27 @@ public class ProductService {
 		Product product;
 		if (opProduct.isPresent()) {
 			product = opProduct.get();
-			product.getItemList().forEach(item -> itemService.setOperational(item.getSerialNumber(), false));
+			product.getItemList().forEach(item -> {
+
+				item.setStatus(ItemStatus.NON_OPERATIONAL);
+				itemRepository.save(item);
+			});
 		} else {
 			throw new IllegalArgumentException("Could not find the product with Id: " + productId);
 		}
-		
+
 	}
-	
-	public Product findByName(String productName) {
-		
-		List<Product> productsList = productRepository.findAll();
-		
-		for (Product product : productsList) {
-			if (product.getName().equalsIgnoreCase(productName)) {
-				return product;
-			}
-		}
-		return null;
+
+	public List<Product> findProductsByName(String productName) {
+
+		return productRepository.findAll().stream().filter(product -> product.getName().contains(productName))
+				.collect(Collectors.toList());
+	}
+
+	public List<Product> findProductsByCategory(Long categoryId) {
+
+		return productRepository.findAll().stream().filter(product -> product.getCategory().getId().equals(categoryId))
+				.collect(Collectors.toList());
+
 	}
 }

@@ -38,6 +38,6 @@ public class UserService {
 
     public Set<User> getUsersToAlert(Long productId, LocalDate availableOnDate) {
 
-        return alertRepository.findAlertsByProductIdAndInterval(productId, availableOnDate).stream().map(alert -> alert.getUser()).collect(Collectors.toSet());
+        return alertRepository.findAlertsByProductIdAndDate(productId, availableOnDate).stream().map(alert -> alert.getUser()).collect(Collectors.toSet());
     }
 }
